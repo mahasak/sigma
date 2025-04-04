@@ -1,5 +1,5 @@
-import { ActionFunctionArgs, json } from "@remix-run/node";
-import { getServerTiming, time } from "../../timing.server";
+import { ActionFunctionArgs } from "@remix-run/node";
+import { getServerTiming } from "../../timing.server";
 
 export async function loader() {
   const { time, getServerTimingHeader } = getServerTiming()

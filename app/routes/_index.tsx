@@ -39,21 +39,6 @@ export default function NewPage() {
   return (
     <>
     <h1>My Test Order</h1>
-    <div>
-      <p>{data.message}</p>
-      <span>Order ID: {data.external_id}</span><br/>
-      <span>Seller ID: {data.seller_id}</span><br/>
-      <span>Bank code: {data.bank_code}</span><br/>
-      <span>Bank account: {data.bank_account}</span><br/>
-      <span>Amount: {data.amount}</span><br/>
-    </div>
-    <div id="meta-appswitch" style={{display:'none'}}>
-      <div id="seller_id">{data.seller_id}</div>
-      <div id="external_id">{data.external_id}</div>
-      <div id="bank_code">{data.bank_code}</div>
-      <div id="bank_account">{data.bank_account}</div>
-      <div id="amount">{data.amount}</div>
-    </div>
     </>
   );
 }

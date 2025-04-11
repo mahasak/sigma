@@ -1,41 +1,188 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ActionFunctionArgs } from "@remix-run/node";
-import { getServerTiming } from "../../timing.server";
 
-export async function loader() {
-  const { time, getServerTimingHeader } = getServerTiming()
+export async function loader({request}) {
+  const VERIFY_TOKEN = process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN ?? "";
 
-  await time(
-    {
-      name: "content",
-      description: "Compile",
-    },
-    () => {},
-  );
+  const url = new URL(request.url);
 
- return Response.json(
-  { text: 'Hello' },
-  {
-    headers: getServerTimingHeader(),
-  },);
+  const mode = url.searchParams.get('hub.mode');
+  const token = url.searchParams.get('hub.verify_token');
+  const challenge = url.searchParams.get('hub.challenge');
+
+  console.log("Webhook verification:", { mode, token });
+
+  if (VERIFY_TOKEN === "") {
+    console.log("No verify token setup");
+    return new Response("Method Not Allowed", {
+      status: 405,
+      headers: {
+        "Content-Type": "text/plain",
+        "Allow": "GET, POST" // Specify which methods are allowed
+      }
+    });
+  }
+
+  // Verify the webhook
+  if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+    console.log("Webhook verified");
+    return new Response(challenge, {
+      status: 200,
+      headers: { "Content-Type": "text/plain" }
+    });
+  } else {
+    console.log("Webhook verification failed");
+    return new Response("Verification failed", {
+      status: 403,
+      headers: { "Content-Type": "text/plain" }
+    });
+  }
 }
 
 
 export async function action({ request }: ActionFunctionArgs) {
-  const { time, getServerTimingHeader } = getServerTiming()
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const body = await request.formData();
-
-  await time(
-    {
-      name: "content",
-      description: "Compile",
-    },
-    () => {},
-  );
-
- return Response.json(
-  { text: 'Hello' },{
-    headers: getServerTimingHeader(),
+  // Check if this is a POST request
+  if (request.method !== "POST") {
+    return new Response("Method not allowed", {
+      status: 405,
+      headers: {
+        "Allow": "POST",
+        "Content-Type": "text/plain"
+      }
+    });
   }
- );
+
+  try {
+    // Parse the request body
+    const body = await request.json();
+    
+    // Make sure this is a page subscription
+    if (body.object === 'page') {
+      // Iterate over each entry - there may be multiple if batched
+      for (const entry of body.entry) {
+        // Handle each messaging event
+        if (entry.messaging) {
+          for (const webhookEvent of entry.messaging) {
+            console.log("Webhook event:", webhookEvent);
+            
+            // Get the sender PSID
+            const senderPsid = webhookEvent.sender.id;
+            
+            // Handle messages
+            if (webhookEvent.message) {
+              await handleMessage(senderPsid, webhookEvent.message);
+            } 
+            // Handle postbacks
+            else if (webhookEvent.postback) {
+              await handlePostback(senderPsid, webhookEvent.postback);
+            }
+          }
+        }
+      }
+      
+      // Return a '200 OK' response to all events
+      return new Response("EVENT_RECEIVED", {
+        status: 200,
+        headers: { "Content-Type": "text/plain" }
+      });
+    } else {
+      // Not a page subscription
+      return new Response("Not a page subscription", {
+        status: 404,
+        headers: { "Content-Type": "text/plain" }
+      });
+    }
+  } catch (error) {
+    console.error("Error processing webhook:", error);
+    return new Response("Error processing webhook", {
+      status: 500,
+      headers: { "Content-Type": "text/plain" }
+    });
+  }
+}
+
+async function handleMessage(senderPsid: string, receivedMessage: any) {
+  let response;
+  
+  // Check if the message contains text
+  if (receivedMessage.text) {
+    // Create the payload for a basic text message
+    response = {
+      "text": `You sent: "${receivedMessage.text}". Now send me an attachment!`
+    };
+  } else if (receivedMessage.attachments) {
+    // Gets the URL of the message attachment
+    const attachmentUrl = receivedMessage.attachments[0].payload.url;
+    response = {
+      "attachment": {
+        "type": "template",
+        "payload": {
+          "template_type": "generic",
+          "elements": [{
+            "title": "Is this the right picture?",
+            "subtitle": "Tap a button to respond.",
+            "image_url": attachmentUrl,
+            "buttons": [
+              {
+                "type": "postback",
+                "title": "Yes!",
+                "payload": "yes",
+              },
+              {
+                "type": "postback",
+                "title": "No!",
+                "payload": "no",
+              }
+            ],
+          }]
+        }
+      }
+    };
+  }
+  
+  // Sends the response message
+  // await callSendAPI(senderPsid, response);
+}
+
+async function handlePostback(senderPsid: string, receivedPostback: any) {
+  let response;
+  
+  // Get the payload for the postback
+  const payload = receivedPostback.payload;
+  
+  // Set the response based on the postback payload
+  if (payload === 'yes') {
+    response = { "text": "Thanks!" };
+  } else if (payload === 'no') {
+    response = { "text": "Oops, try sending another image." };
+  }
+  
+  // Send the message to acknowledge the postback
+  // await callSendAPI(senderPsid, response);
+}
+
+async function callSendAPI(senderPsid: string, response: any) {
+  const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN ?? "";
+  // Construct the message body
+  const requestBody = {
+    "recipient": {
+      "id": senderPsid
+    },
+    "message": response
+  };
+  
+  try {
+    // Send the HTTP request to the Messenger Platform
+    const res = await fetch(`https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody)
+    });
+    
+    const data = await res.json();
+    console.log("Message sent successfully:", data);
+  } catch (error) {
+    console.error("Unable to send message:", error);
+  }
 }

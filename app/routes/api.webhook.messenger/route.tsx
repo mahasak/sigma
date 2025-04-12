@@ -65,11 +65,19 @@ export async function action({ request }: ActionFunctionArgs) {
     
     // Make sure this is a page subscription
     if (body.object === 'page') {
+      console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-');
       console.log(body);
+      console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-');
       // Iterate over each entry - there may be multiple if batched
       for (const entry of body.entry) {
         const page_id = entry.id;
         console.log("page id:", page_id);
+        
+        if(entry.changes) {
+          console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-');
+          console.log("Webhook changes:",entry.changes);
+          console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-');
+        }
         // Handle each messaging event
         if (page_id === APP_PAGE_ID && entry.messaging) {
           for (const webhookEvent of entry.messaging) {

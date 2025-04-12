@@ -21,4 +21,13 @@ export default defineConfig({
     }),
     tsconfigPaths(),
   ],
+  server: {
+    // ... any existing server options
+    allowedHosts: [
+      'overseas-ed-secretariat-arena.trycloudflare.com',
+      'graph.facebook.com',
+      '*.facebook.com',
+      // Keep any existing allowed hosts if present
+    ]
+  }
 });

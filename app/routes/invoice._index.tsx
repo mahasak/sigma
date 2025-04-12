@@ -142,7 +142,7 @@ export default function Invoice() {
               <p className="text-gray-600">{data.merchant.phone}</p>
             </div>
             <div className="bg-gray-50 p-4 rounded-md">
-              <h2 className="text-xl font-bold text-gray-1200 mb-2">INVOICE</h2>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">INVOICE</h2>
               <div className="text-sm">
                 <div className="flex justify-between mb-1">
                   <span className="font-medium text-gray-600">Invoice:</span>

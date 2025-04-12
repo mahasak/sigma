@@ -246,54 +246,170 @@ async function loader$2({ request }) {
     external_id,
     bank_code,
     bank_account,
-    amount
+    amount,
+    merchant: {
+      name: "Acme Corporation",
+      address: "123 Business Ave, Suite 100",
+      city: "San Francisco, CA 94107",
+      email: "billing@acmecorp.com",
+      phone: "+1 (555) 123-4567",
+      website: "www.acmecorp.com",
+      logo: "/images/logo.png"
+    },
+    buyer: {
+      name: "John Doe",
+      company: "Doe Enterprises",
+      address: "456 Customer Lane",
+      city: "New York, NY 10001",
+      email: "john@doeenterprises.com",
+      phone: "+1 (555) 987-6543"
+    },
+    order: {
+      invoiceNumber: external_id,
+      date: "April 12, 2025",
+      dueDate: "May 12, 2025",
+      items: [
+        { description: "Website Development", quantity: 1, price: 20 }
+      ],
+      subtotal: 20,
+      tax: 0,
+      total: 20
+    },
+    payment: {
+      bankName: "First National Bank",
+      accountName: "Acme Corporation",
+      accountNumber: "1234567890",
+      routingNumber: "987654321",
+      swiftCode: "FNBAUS12",
+      seller_id,
+      external_id,
+      bank_code,
+      bank_account,
+      amount
+    }
   });
 }
-function NewPage$1() {
+const handle = {
+  hydrate: false
+};
+function Invoice() {
   const data = useLoaderData();
   useParams();
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx("h1", { children: "My Test Order" }),
-    /* @__PURE__ */ jsxs("div", { children: [
-      /* @__PURE__ */ jsx("p", { children: data.message }),
-      /* @__PURE__ */ jsxs("span", { children: [
-        "Order ID: ",
-        data.external_id
+  return /* @__PURE__ */ jsx("div", { "data-no-hydrate": true, className: "bg-gray-100 min-h-screen py-8 px-4", children: /* @__PURE__ */ jsxs("div", { className: "max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden", children: [
+    /* @__PURE__ */ jsx("div", { className: "p-6 border-b", children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col md:flex-row justify-between items-start", children: [
+      /* @__PURE__ */ jsxs("div", { className: "mb-4 md:mb-0", children: [
+        /* @__PURE__ */ jsx("div", { className: "h-12 w-12 bg-gray-200 rounded-md mb-2", children: /* @__PURE__ */ jsx("div", { className: "h-full w-full flex items-center justify-center text-gray-500 font-bold", children: "LOGO" }) }),
+        /* @__PURE__ */ jsx("h1", { className: "text-2xl font-bold text-gray-800", children: data.merchant.name }),
+        /* @__PURE__ */ jsx("p", { className: "text-gray-600", children: data.merchant.address }),
+        /* @__PURE__ */ jsx("p", { className: "text-gray-600", children: data.merchant.city }),
+        /* @__PURE__ */ jsx("p", { className: "text-gray-600", children: data.merchant.email }),
+        /* @__PURE__ */ jsx("p", { className: "text-gray-600", children: data.merchant.phone })
       ] }),
-      /* @__PURE__ */ jsx("br", {}),
-      /* @__PURE__ */ jsxs("span", { children: [
-        "Seller ID: ",
-        data.seller_id
-      ] }),
-      /* @__PURE__ */ jsx("br", {}),
-      /* @__PURE__ */ jsxs("span", { children: [
-        "Bank code: ",
-        data.bank_code
-      ] }),
-      /* @__PURE__ */ jsx("br", {}),
-      /* @__PURE__ */ jsxs("span", { children: [
-        "Bank account: ",
-        data.bank_account
-      ] }),
-      /* @__PURE__ */ jsx("br", {}),
-      /* @__PURE__ */ jsxs("span", { children: [
-        "Amount: ",
-        data.amount
-      ] }),
-      /* @__PURE__ */ jsx("br", {})
+      /* @__PURE__ */ jsxs("div", { className: "bg-gray-50 p-4 rounded-md", children: [
+        /* @__PURE__ */ jsx("h2", { className: "text-xl font-bold text-gray-800 mb-2", children: "INVOICE" }),
+        /* @__PURE__ */ jsxs("div", { className: "text-sm", children: [
+          /* @__PURE__ */ jsxs("div", { className: "flex justify-between mb-1", children: [
+            /* @__PURE__ */ jsx("span", { className: "font-medium text-gray-600", children: "Invoice Number:" }),
+            /* @__PURE__ */ jsx("span", { children: data.order.invoiceNumber })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "flex justify-between mb-1", children: [
+            /* @__PURE__ */ jsx("span", { className: "font-medium text-gray-600", children: "Date:" }),
+            /* @__PURE__ */ jsx("span", { children: data.order.date })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "flex justify-between", children: [
+            /* @__PURE__ */ jsx("span", { className: "font-medium text-gray-600", children: "Due Date:" }),
+            /* @__PURE__ */ jsx("span", { children: data.order.dueDate })
+          ] })
+        ] })
+      ] })
+    ] }) }),
+    /* @__PURE__ */ jsxs("div", { className: "p-6 border-b", children: [
+      /* @__PURE__ */ jsx("h2", { className: "text-lg font-bold text-gray-800 mb-3", children: "Bill To:" }),
+      /* @__PURE__ */ jsxs("div", { className: "text-gray-700", children: [
+        /* @__PURE__ */ jsx("p", { className: "font-medium", children: data.buyer.name }),
+        /* @__PURE__ */ jsx("p", { children: data.buyer.company }),
+        /* @__PURE__ */ jsx("p", { children: data.buyer.address }),
+        /* @__PURE__ */ jsx("p", { children: data.buyer.city }),
+        /* @__PURE__ */ jsx("p", { children: data.buyer.email }),
+        /* @__PURE__ */ jsx("p", { children: data.buyer.phone })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "p-6 border-b", children: [
+      /* @__PURE__ */ jsx("h2", { className: "text-lg font-bold text-gray-800 mb-4", children: "Order Details" }),
+      /* @__PURE__ */ jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs("table", { className: "w-full text-sm", children: [
+        /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { className: "bg-gray-50", children: [
+          /* @__PURE__ */ jsx("th", { className: "py-2 px-3 text-left font-semibold text-gray-700", children: "Description" }),
+          /* @__PURE__ */ jsx("th", { className: "py-2 px-3 text-right font-semibold text-gray-700", children: "Qty" }),
+          /* @__PURE__ */ jsx("th", { className: "py-2 px-3 text-right font-semibold text-gray-700", children: "Price" }),
+          /* @__PURE__ */ jsx("th", { className: "py-2 px-3 text-right font-semibold text-gray-700", children: "Amount" })
+        ] }) }),
+        /* @__PURE__ */ jsx("tbody", { className: "divide-y divide-gray-200", children: data.order.items.map((item, index) => /* @__PURE__ */ jsxs("tr", { children: [
+          /* @__PURE__ */ jsx("td", { className: "py-3 px-3 text-gray-700", children: item.description }),
+          /* @__PURE__ */ jsx("td", { className: "py-3 px-3 text-right text-gray-700", children: item.quantity }),
+          /* @__PURE__ */ jsx("td", { className: "py-3 px-3 text-right text-gray-700", children: item.price.toFixed(2) }),
+          /* @__PURE__ */ jsx("td", { className: "py-3 px-3 text-right text-gray-700", children: (item.quantity * item.price).toFixed(2) })
+        ] }, index)) }),
+        /* @__PURE__ */ jsxs("tfoot", { className: "border-t border-gray-300", children: [
+          /* @__PURE__ */ jsxs("tr", { children: [
+            /* @__PURE__ */ jsx("td", { colSpan: 3, className: "py-2 px-3 text-right font-medium text-gray-700", children: "Subtotal" }),
+            /* @__PURE__ */ jsx("td", { className: "py-2 px-3 text-right font-medium text-gray-700", children: data.order.subtotal.toFixed(2) })
+          ] }),
+          /* @__PURE__ */ jsxs("tr", { children: [
+            /* @__PURE__ */ jsx("td", { colSpan: 3, className: "py-2 px-3 text-right font-medium text-gray-700", children: "Tax (10%)" }),
+            /* @__PURE__ */ jsx("td", { className: "py-2 px-3 text-right font-medium text-gray-700", children: data.order.tax.toFixed(2) })
+          ] }),
+          /* @__PURE__ */ jsxs("tr", { className: "bg-gray-50", children: [
+            /* @__PURE__ */ jsx("td", { colSpan: 3, className: "py-2 px-3 text-right font-bold text-gray-800", children: "Total" }),
+            /* @__PURE__ */ jsx("td", { className: "py-2 px-3 text-right font-bold text-gray-800", children: data.order.total.toFixed(2) })
+          ] })
+        ] })
+      ] }) })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "p-6 border-b", children: [
+      /* @__PURE__ */ jsx("h2", { className: "text-lg font-bold text-gray-800 mb-3", children: "Payment Instructions" }),
+      /* @__PURE__ */ jsx("div", { className: "bg-gray-50 p-4 rounded-md", children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: [
+        /* @__PURE__ */ jsxs("div", { children: [
+          /* @__PURE__ */ jsx("p", { className: "text-sm font-medium text-gray-600", children: "Bank Name" }),
+          /* @__PURE__ */ jsx("p", { className: "text-gray-800", children: data.payment.bankName })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { children: [
+          /* @__PURE__ */ jsx("p", { className: "text-sm font-medium text-gray-600", children: "Account Name" }),
+          /* @__PURE__ */ jsx("p", { className: "text-gray-800", children: data.payment.accountName })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { children: [
+          /* @__PURE__ */ jsx("p", { className: "text-sm font-medium text-gray-600", children: "Account Number" }),
+          /* @__PURE__ */ jsx("p", { className: "text-gray-800", children: data.payment.accountNumber })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { children: [
+          /* @__PURE__ */ jsx("p", { className: "text-sm font-medium text-gray-600", children: "Routing Number" }),
+          /* @__PURE__ */ jsx("p", { className: "text-gray-800", children: data.payment.routingNumber })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { children: [
+          /* @__PURE__ */ jsx("p", { className: "text-sm font-medium text-gray-600", children: "SWIFT Code" }),
+          /* @__PURE__ */ jsx("p", { className: "text-gray-800", children: data.payment.swiftCode })
+        ] })
+      ] }) })
     ] }),
     /* @__PURE__ */ jsxs("div", { id: "meta-appswitch", style: { display: "none" }, children: [
-      /* @__PURE__ */ jsx("div", { id: "seller_id", children: data.seller_id }),
-      /* @__PURE__ */ jsx("div", { id: "external_id", children: data.external_id }),
-      /* @__PURE__ */ jsx("div", { id: "bank_code", children: data.bank_code }),
-      /* @__PURE__ */ jsx("div", { id: "bank_account", children: data.bank_account }),
-      /* @__PURE__ */ jsx("div", { id: "amount", children: data.amount })
+      /* @__PURE__ */ jsx("div", { id: "seller_id", data: data.seller_id, children: data.seller_id }),
+      /* @__PURE__ */ jsx("div", { id: "external_id", data: data.external_id, children: data.external_id }),
+      /* @__PURE__ */ jsx("div", { id: "bank_code", data: data.bank_code, children: data.bank_code }),
+      /* @__PURE__ */ jsx("div", { id: "bank_account", data: data.bank_account, children: data.bank_account }),
+      /* @__PURE__ */ jsx("div", { id: "amount", data: data.amount, children: data.amount })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "p-6 text-center text-gray-600 text-sm", children: [
+      /* @__PURE__ */ jsx("p", { children: "Thank you for your business!" }),
+      /* @__PURE__ */ jsxs("p", { className: "mt-1", children: [
+        "If you have any questions, please contact us at ",
+        data.merchant.email
+      ] })
     ] })
-  ] });
+  ] }) });
 }
 const route2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: NewPage$1,
+  default: Invoice,
+  handle,
   loader: loader$2
 }, Symbol.toStringTag, { value: "Module" }));
 function getServerTiming() {
@@ -399,53 +515,16 @@ async function loader({ request }) {
   });
 }
 function NewPage() {
-  const data = useLoaderData();
+  useLoaderData();
   useParams();
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx("h1", { children: "My Test Order" }),
-    /* @__PURE__ */ jsxs("div", { children: [
-      /* @__PURE__ */ jsx("p", { children: data.message }),
-      /* @__PURE__ */ jsxs("span", { children: [
-        "Order ID: ",
-        data.external_id
-      ] }),
-      /* @__PURE__ */ jsx("br", {}),
-      /* @__PURE__ */ jsxs("span", { children: [
-        "Seller ID: ",
-        data.seller_id
-      ] }),
-      /* @__PURE__ */ jsx("br", {}),
-      /* @__PURE__ */ jsxs("span", { children: [
-        "Bank code: ",
-        data.bank_code
-      ] }),
-      /* @__PURE__ */ jsx("br", {}),
-      /* @__PURE__ */ jsxs("span", { children: [
-        "Bank account: ",
-        data.bank_account
-      ] }),
-      /* @__PURE__ */ jsx("br", {}),
-      /* @__PURE__ */ jsxs("span", { children: [
-        "Amount: ",
-        data.amount
-      ] }),
-      /* @__PURE__ */ jsx("br", {})
-    ] }),
-    /* @__PURE__ */ jsxs("div", { id: "meta-appswitch", style: { display: "none" }, children: [
-      /* @__PURE__ */ jsx("div", { id: "seller_id", children: data.seller_id }),
-      /* @__PURE__ */ jsx("div", { id: "external_id", children: data.external_id }),
-      /* @__PURE__ */ jsx("div", { id: "bank_code", children: data.bank_code }),
-      /* @__PURE__ */ jsx("div", { id: "bank_account", children: data.bank_account }),
-      /* @__PURE__ */ jsx("div", { id: "amount", children: data.amount })
-    ] })
-  ] });
+  return /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsx("h1", { children: "My Test Order" }) });
 }
 const route4 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: NewPage,
   loader
 }, Symbol.toStringTag, { value: "Module" }));
-const serverManifest = { "entry": { "module": "/assets/entry.client-DrmCk0ox.js", "imports": ["/assets/components-CQTjDfHr.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-Ch9VWX-5.js", "imports": ["/assets/components-CQTjDfHr.js"], "css": ["/assets/root-BG7Jttxy.css"] }, "routes/api.webhook.messenger": { "id": "routes/api.webhook.messenger", "parentId": "root", "path": "api/webhook/messenger", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/route-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/invoice._index": { "id": "routes/invoice._index", "parentId": "root", "path": "invoice", "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/invoice._index-BrxSPubU.js", "imports": ["/assets/components-CQTjDfHr.js"], "css": [] }, "routes/hello._index": { "id": "routes/hello._index", "parentId": "root", "path": "hello", "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/hello._index-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-BrxSPubU.js", "imports": ["/assets/components-CQTjDfHr.js"], "css": [] } }, "url": "/assets/manifest-b85e8218.js", "version": "b85e8218" };
+const serverManifest = { "entry": { "module": "/assets/entry.client-DrmCk0ox.js", "imports": ["/assets/components-CQTjDfHr.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/root-X9CjrVav.js", "imports": ["/assets/components-CQTjDfHr.js"], "css": ["/assets/root-DWqObA9w.css"] }, "routes/api.webhook.messenger": { "id": "routes/api.webhook.messenger", "parentId": "root", "path": "api/webhook/messenger", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/route-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/invoice._index": { "id": "routes/invoice._index", "parentId": "root", "path": "invoice", "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/invoice._index-BDTfKjG_.js", "imports": ["/assets/components-CQTjDfHr.js"], "css": [] }, "routes/hello._index": { "id": "routes/hello._index", "parentId": "root", "path": "hello", "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/hello._index-l0sNRNKZ.js", "imports": [], "css": [] }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasErrorBoundary": false, "module": "/assets/_index-TZfhs18P.js", "imports": ["/assets/components-CQTjDfHr.js"], "css": [] } }, "url": "/assets/manifest-aeac2409.js", "version": "aeac2409" };
 const mode = "production";
 const assetsBuildDirectory = "build/client";
 const basename = "/";

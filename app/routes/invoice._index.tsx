@@ -146,15 +146,15 @@ export default function Invoice() {
               <div className="text-sm">
                 <div className="flex justify-between mb-1">
                   <span className="font-medium text-gray-600">Invoice:</span>
-                  <span>{data.order.invoiceNumber}</span>
+                  <span className="font-medium text-gray-600">{data.order.invoiceNumber}</span>
                 </div>
                 <div className="flex justify-between mb-1">
                   <span className="font-medium text-gray-600">Date:</span>
-                  <span>{data.order.date}</span>
+                  <span className="font-medium text-gray-600">{data.order.date}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium text-gray-600">Due Date:</span>
-                  <span>{data.order.dueDate}</span>
+                  <span className="font-medium text-gray-600">{data.order.dueDate}</span>
                 </div>
               </div>
             </div>

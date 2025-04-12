@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { json } from "@remix-run/node";
+
+import { data } from "@remix-run/node";
 import { useLoaderData, useParams } from "@remix-run/react";
 import Snowflakify from 'snowflakify';
 
@@ -13,7 +14,7 @@ export async function loader({ request }) {
   const bank_account = url.searchParams.get("bank_account") || "7302973231";
   const amount = url.searchParams.get("amount") || "20";
 
-  return json({ 
+  return data({ 
     message: "Please pay to this order!",
     seller_id: seller_id,
     external_id: external_id,
@@ -48,11 +49,16 @@ export default function NewPage() {
       <span>Amount: {data.amount}</span><br/>
     </div>
     <div id="meta-appswitch" style={{display:'none'}}>
-      <div id="seller_id">{data.seller_id}</div>
-      <div id="external_id">{data.external_id}</div>
-      <div id="bank_code">{data.bank_code}</div>
-      <div id="bank_account">{data.bank_account}</div>
-      <div id="amount">{data.amount}</div>
+      {/* @ts-expect-error Custom data attribute */}
+      <div id="seller_id" data={data.seller_id}>{data.seller_id}</div>
+      {/* @ts-expect-error Custom data attribute */}
+      <div id="external_id" data={data.external_id}>{data.external_id}</div>
+      {/* @ts-expect-error Custom data attribute */}
+      <div id="bank_code" data={data.bank_code}>{data.bank_code}</div>
+      {/* @ts-expect-error Custom data attribute */}
+      <div id="bank_account" data={data.bank_account}>{data.bank_account}</div>
+      {/* @ts-expect-error Custom data attribute */}
+      <div id="amount" data={data.amount}>{data.amount}</div>
     </div>
     </>
   );

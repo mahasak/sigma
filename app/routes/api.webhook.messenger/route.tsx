@@ -78,10 +78,10 @@ export async function action({ request }: ActionFunctionArgs) {
             console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-');
             console.log("Webhook changes:", change);
             console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-');
-            
+
             await handleChanges(change);
           }
-          
+
         }
         // Handle each messaging event
         if (page_id === APP_PAGE_ID && entry.messaging) {
@@ -133,11 +133,11 @@ async function handleMessage(senderPsid: string, receivedMessage: any) {
       console.log('send invoice');
       const invoice_id = snowflakify.nextHexId();
 
-      const link = receivedMessage.text.startsWith('#pancake') 
+      const link = receivedMessage.text.startsWith('#pancake')
         ? 'https://order.pke.gg/payment?id=RyvKXPdNWkGlh2Wk8g70JpnHa5li8j2UDjToTHOErON0hZ5QgjMFwpCtgdQXxxFV4UuXGnZbRi3qae3VTTuXlnR9lo4%3D'
         : `https://sigma.femto.sh/invoice?external_id=${invoice_id}`;
-      
-        const payload = {
+
+      const payload = {
         "recipient": {
           "id": "7543714042334599"
         },
@@ -196,20 +196,120 @@ async function handleMessage(senderPsid: string, receivedMessage: any) {
 }
 
 async function handleChanges(change: any) {
-  if( change.field === 'invoice_access_bank_slip_events') {
+  if (change.field === 'invoice_access_bank_slip_events') {
     const psid = change.value.buyer_id;
     const page_id = change.value.page_id;
     const ref_id = change.value.app_switch_reference_id;
     const external_id = change.value.external_id;
 
-    const response = { "text": "Received payment notification\n" 
-      + `Order id: ${external_id}\n`
-      + `AppSwitch Ref ID: ${ref_id}\n`
-     };
+    const response = {
+      "text": "Received payment notification\n"
+        + `-=-=-=-=-=-=-=-=-=-\n`
+        + `Order id: ${external_id}\n`
+        + `AppSwitch Ref ID: ${ref_id}\n`
+    };
 
-     await callSendAPI(psid, response);
+    await callSendAPI(psid, response);
+
+    await genPaymentDetails(page_id, psid,external_id, ref_id);
   }
 
+}
+
+async function genPaymentDetails(page_id: string, psid: string, order_id:string, ref_id: string) {
+  const ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN ?? "";
+  try {
+    const url = `https://graph.facebook.com/v18.0/${page_id}/invoice_access_invoice_status?invoice_id=${ref_id}&access_token=${ACCESS_TOKEN}`;
+
+    console.log(url);
+    // Send the HTTP request to the Messenger Platform
+    const res = await fetch(url, {
+      method: "GET",
+    });
+
+    const data = await res.json();
+    
+    const external_id = data.data[0].invoice_id;
+    const invoice_status = data.data[0].invoice_status;
+    const bank_account_number = data.data[0].bank_account_number;
+    const bank_code = data.data[0].bank_code;
+    const transfer_slip = data.data[0].transfer_slip;
+    const amount = parseInt(data.data[0].payout_amount.amount)/100;
+    const payout_amount = `${amount} ${data.data[0].payout_amount.currency}`;
+
+    const response = {
+      "text": "Confirmed payment\n"
+        + `-=-=-=-=-=-=-=-=-=-\n`
+        + `Order id: ${order_id}\n`
+        + `AppSwitch Ref ID: ${external_id}\n`
+        + `-=-=-=-=-=-=-=-=-=-\n`
+        + `Bank code: ${bank_code}\n`
+        + `A/C no: ${bank_account_number}\n`
+        + `amount: ${payout_amount}\n`
+        + `Status: ${invoice_status}\n`
+    };
+
+    await callSendAPI(psid, response);
+
+    const response_before_slip = {
+      "text": "Slip Image received"
+    };
+
+    await callSendAPI(psid, response_before_slip);
+
+    await sendSlipImage(psid, transfer_slip);
+
+  } catch (error) {
+    console.error("Unable to send message:", error);
+  }
+}
+
+async function sendSlipImage(recipientId: string, base64Image: string) {
+  const ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN ?? "";
+
+  // Convert base64 to Blob
+
+  // Remove the data URL prefix if present
+  const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, ''); 
+  const byteCharacters = atob(base64Data);
+  const byteArrays = [];
+  
+  for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+    const slice = byteCharacters.slice(offset, offset + 512);
+    
+    const byteNumbers = new Array(slice.length);
+    for (let i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i);
+    }
+    
+    const byteArray = new Uint8Array(byteNumbers);
+    byteArrays.push(byteArray);
+  }
+  
+  const blob = new Blob(byteArrays, { type: 'image/jpeg' }); // Adjust MIME type as needed
+  
+  // Create FormData and append necessary data
+  const formData = new FormData();
+  formData.append('recipient', JSON.stringify({ id: recipientId }));
+  formData.append('message', JSON.stringify({
+    attachment: {
+      type: 'image',
+      payload: {
+        is_reusable: true
+      }
+    }
+  }));
+  
+  // Append the image blob as a file
+  formData.append('filedata', blob, 'bank_slip.jpg');
+  
+  // Send the request
+  const response = await fetch(`https://graph.facebook.com/v16.0/me/messages?access_token=${ACCESS_TOKEN}`, {
+    method: 'POST',
+    body: formData
+  });
+  
+  return await response.json();
 }
 
 async function handlePostback(senderPsid: string, receivedPostback: any) {
@@ -231,7 +331,6 @@ async function handlePostback(senderPsid: string, receivedPostback: any) {
 
 async function callSendAPI(senderPsid: string, response: any) {
   const ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN ?? "";
-  console.log("token", ACCESS_TOKEN);
   // Construct the message body
   const requestBody = {
     "recipient": {

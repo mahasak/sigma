@@ -5,7 +5,7 @@ import Snowflakify from 'snowflakify';
 
 const snowflakify = new Snowflakify();
 
-export async function loader({request}) {
+export async function loader({ request }) {
   const VERIFY_TOKEN = process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN ?? "";
 
   const url = new URL(request.url);
@@ -62,7 +62,7 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     // Parse the request body
     const body = await request.json();
-    
+
     // Make sure this is a page subscription
     if (body.object === 'page') {
       console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-');
@@ -72,24 +72,29 @@ export async function action({ request }: ActionFunctionArgs) {
       for (const entry of body.entry) {
         const page_id = entry.id;
         console.log("page id:", page_id);
-        
-        if(entry.changes) {
-          console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-');
-          console.log("Webhook changes:",entry.changes);
-          console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-');
+
+        if (entry.changes) {
+          for (const change of entry.changes) {
+            console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-');
+            console.log("Webhook changes:", change);
+            console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-');
+            
+            await handleChanges(change);
+          }
+          
         }
         // Handle each messaging event
         if (page_id === APP_PAGE_ID && entry.messaging) {
           for (const webhookEvent of entry.messaging) {
             console.log("Webhook event:", webhookEvent);
-            
+
             // Get the sender PSID
             const senderPsid = webhookEvent.sender.id;
-            
+
             // Handle messages
             if (senderPsid !== APP_PAGE_ID && webhookEvent.message) {
               await handleMessage(senderPsid, webhookEvent.message);
-            } 
+            }
             // Handle postbacks
             else if (senderPsid !== APP_PAGE_ID && webhookEvent.postback) {
               await handlePostback(senderPsid, webhookEvent.postback);
@@ -97,7 +102,7 @@ export async function action({ request }: ActionFunctionArgs) {
           }
         }
       }
-      
+
       // Return a '200 OK' response to all events
       return new Response("EVENT_RECEIVED", {
         status: 200,
@@ -121,27 +126,32 @@ export async function action({ request }: ActionFunctionArgs) {
 
 async function handleMessage(senderPsid: string, receivedMessage: any) {
   let response;
-  
+
   // Check if the message contains text
   if (receivedMessage.text) {
-    if (receivedMessage.text.startsWith('#invoice')) {
+    if (receivedMessage.text.startsWith('#invoice') || receivedMessage.text.startsWith('#pancake')) {
       console.log('send invoice');
       const invoice_id = snowflakify.nextHexId();
-      const payload = {
-        "recipient":{
-          "id":"7543714042334599"
+
+      const link = receivedMessage.text.startsWith('#pancake') 
+        ? 'https://order.pke.gg/payment?id=RyvKXPdNWkGlh2Wk8g70JpnHa5li8j2UDjToTHOErON0hZ5QgjMFwpCtgdQXxxFV4UuXGnZbRi3qae3VTTuXlnR9lo4%3D'
+        : `https://sigma.femto.sh/invoice?external_id=${invoice_id}`;
+      
+        const payload = {
+        "recipient": {
+          "id": "7543714042334599"
         },
-        "message":{
-          "attachment":{
-            "type":"template",
-            "payload":{
-              "template_type":"button",
+        "message": {
+          "attachment": {
+            "type": "template",
+            "payload": {
+              "template_type": "button",
               "text": `You received order ID: ${invoice_id}`,
-              "buttons":[
+              "buttons": [
                 {
-                  "type":"web_url",
-                  "url":`https://sigma.femto.sh/invoice?external_id=${invoice_id}`,
-                  "title":"View order",
+                  "type": "web_url",
+                  "url": link,
+                  "title": "View order",
                   "webview_height_ratio": "full",
                   "messenger_extensions": "false"
                 }
@@ -180,24 +190,41 @@ async function handleMessage(senderPsid: string, receivedMessage: any) {
         }
       }
     };
-  }  
+  }
   // Sends the response message
   // await callSendAPI(senderPsid, response);
 }
 
+async function handleChanges(change: any) {
+  if( change.field === 'invoice_access_bank_slip_events') {
+    const psid = change.value.buyer_id;
+    const page_id = change.value.page_id;
+    const ref_id = change.value.app_switch_reference_id;
+    const external_id = change.value.external_id;
+
+    const response = { "text": "Received payment notification\n" 
+      + `Order id: ${external_id}\n`
+      + `AppSwitch Ref ID: ${ref_id}\n`
+     };
+
+     await callSendAPI(psid, response);
+  }
+
+}
+
 async function handlePostback(senderPsid: string, receivedPostback: any) {
   let response;
-  
+
   // Get the payload for the postback
   const payload = receivedPostback.payload;
-  
+
   // Set the response based on the postback payload
   if (payload === 'yes') {
     response = { "text": "Thanks!" };
   } else if (payload === 'no') {
     response = { "text": "Oops, try sending another image." };
   }
-  
+
   // Send the message to acknowledge the postback
   // await callSendAPI(senderPsid, response);
 }
@@ -212,7 +239,7 @@ async function callSendAPI(senderPsid: string, response: any) {
     },
     "message": response
   };
-  
+
   try {
     // Send the HTTP request to the Messenger Platform
     const res = await fetch(`https://graph.facebook.com/v18.0/me/messages?access_token=${ACCESS_TOKEN}`, {
@@ -220,7 +247,7 @@ async function callSendAPI(senderPsid: string, response: any) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(requestBody)
     });
-    
+
     const data = await res.json();
     console.log("Message sent successfully:", data);
   } catch (error) {
@@ -230,7 +257,7 @@ async function callSendAPI(senderPsid: string, response: any) {
 
 async function sendButtonTemplate(payload: any) {
   const ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN ?? "";
-  
+
   try {
     // Send the HTTP request to the Messenger Platform
     const res = await fetch(`https://graph.facebook.com/v18.0/me/messages?access_token=${ACCESS_TOKEN}`, {
@@ -238,7 +265,7 @@ async function sendButtonTemplate(payload: any) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
-    
+
     const data = await res.json();
     console.log("Message sent successfully:", data);
   } catch (error) {

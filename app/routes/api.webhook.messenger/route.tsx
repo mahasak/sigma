@@ -4,6 +4,7 @@ import { ActionFunctionArgs } from "@remix-run/node";
 import Snowflakify from 'snowflakify';
 
 const snowflakify = new Snowflakify();
+const APP_PAGE_ID = process.env.PAGE_ID ?? "";
 
 export async function loader({ request }) {
   const VERIFY_TOKEN = process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN ?? "";
@@ -57,8 +58,6 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
 
-  const APP_PAGE_ID = process.env.PAGE_ID ?? "";
-
   try {
     // Parse the request body
     const body = await request.json();
@@ -72,7 +71,8 @@ export async function action({ request }: ActionFunctionArgs) {
       for (const entry of body.entry) {
         const page_id = entry.id;
         console.log("page id:", page_id);
-
+        console.log("config page id:", APP_PAGE_ID);
+        // Handle changes
         if (entry.changes) {
           for (const change of entry.changes) {
             console.log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-');
@@ -139,7 +139,7 @@ async function handleMessage(senderPsid: string, receivedMessage: any) {
 
       const payload = {
         "recipient": {
-          "id": "7543714042334599"
+          "id": senderPsid
         },
         "message": {
           "attachment": {
@@ -304,7 +304,7 @@ async function sendSlipImage(recipientId: string, base64Image: string) {
   formData.append('filedata', blob, 'bank_slip.jpg');
   
   // Send the request
-  const response = await fetch(`https://graph.facebook.com/v16.0/me/messages?access_token=${ACCESS_TOKEN}`, {
+  const response = await fetch(`https://graph.facebook.com/v16.0/${APP_PAGE_ID}/messages?access_token=${ACCESS_TOKEN}`, {
     method: 'POST',
     body: formData
   });
@@ -341,7 +341,7 @@ async function callSendAPI(senderPsid: string, response: any) {
 
   try {
     // Send the HTTP request to the Messenger Platform
-    const res = await fetch(`https://graph.facebook.com/v18.0/me/messages?access_token=${ACCESS_TOKEN}`, {
+    const res = await fetch(`https://graph.facebook.com/v18.0/${APP_PAGE_ID}/messages?access_token=${ACCESS_TOKEN}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(requestBody)
@@ -359,7 +359,7 @@ async function sendButtonTemplate(payload: any) {
 
   try {
     // Send the HTTP request to the Messenger Platform
-    const res = await fetch(`https://graph.facebook.com/v18.0/me/messages?access_token=${ACCESS_TOKEN}`, {
+    const res = await fetch(`https://graph.facebook.com/v18.0/${APP_PAGE_ID}/messages?access_token=${ACCESS_TOKEN}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)

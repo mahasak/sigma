@@ -25,6 +25,7 @@ export default defineConfig({
     // ... any existing server options
     allowedHosts: [
       'overseas-ed-secretariat-arena.trycloudflare.com',
+      'citysearch-passage-kazakhstan-future.trycloudflare.com',
       'graph.facebook.com',
       '*.facebook.com',
       // Keep any existing allowed hosts if present

@@ -24,10 +24,8 @@ export default defineConfig({
   server: {
     // ... any existing server options
     allowedHosts: [
-      'overseas-ed-secretariat-arena.trycloudflare.com',
-      'citysearch-passage-kazakhstan-future.trycloudflare.com',
-      'graph.facebook.com',
-      '*.facebook.com',
+      'disposition-athletes-fellowship-car.trycloudflare.com',
+      'sigma.femto.sh',
       // Keep any existing allowed hosts if present
     ]
   }

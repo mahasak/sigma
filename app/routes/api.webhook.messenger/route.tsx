@@ -228,6 +228,8 @@ async function genPaymentDetails(page_id: string, psid: string, order_id:string,
     });
 
     const data = await res.json();
+
+    console.log(data);
     
     const external_id = data.data[0].invoice_id;
     const invoice_status = data.data[0].invoice_status;
